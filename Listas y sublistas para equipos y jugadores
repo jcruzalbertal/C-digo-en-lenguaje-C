@@ -1,0 +1,130 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef struct jugador {
+    int nro;
+    char nombre[50];
+    struct jugador *sig;
+} t_jugador;
+typedef struct equipo{
+    char equipo[50];
+    t_jugador *sub;
+    struct equipo *sig;
+} t_equipo;
+//-------------
+t_equipo* crearequipo(){
+    t_equipo *nuevo = (t_equipo*)malloc(sizeof(t_equipo));
+        printf("Nombre equipo: ");
+        scanf("%s",nuevo->equipo);
+        nuevo->sig = NULL;
+        nuevo->sub = NULL;
+        return nuevo;
+    }
+void ordenar(t_equipo **l){
+    t_equipo *nuevo = crearequipo();
+    if (*l == NULL || strcmp(nuevo->equipo,(*l)->equipo) < 0){ // strcmp(a,b) devuelve < 0 a antes que b, 0 si son iguales, > 0 a despues de b.
+        nuevo->sig = (*l);
+        (*l) = nuevo;
+        return;
+    }
+    t_equipo *act = (*l);
+    while (act->sig != NULL && strcmp(act->sig->equipo,nuevo->equipo) <= 0){
+           act = act->sig;
+    }
+    nuevo->sig = act->sig;
+    act->sig = nuevo;
+}
+void mostrar(t_equipo *l){
+    t_equipo *act = l;
+    while (act != NULL){
+        system("cls");
+        printf("\nEquipo: %s\n",act->equipo);
+        t_jugador *a = act->sub;
+        while (a != NULL){
+            printf("Numero:  %d\n",a->nro);
+            printf("Jugador: %s\n",a->nombre);
+            a = a->sig;
+        }
+        system("pause");
+        act = act->sig;
+    }
+}
+t_equipo* buscar (t_equipo *l, char s[50]){
+    if (strcmp(l->equipo, s) == 0){
+        return l;
+    } else if (l->sig != NULL){
+        buscar(l->sig,s);
+    } else return NULL;
+}
+void insertar(t_equipo *n){
+    t_jugador *nuevo = (t_jugador*)malloc(sizeof(t_jugador));
+    printf("Nombre de jugador: ");
+    scanf("%s",nuevo->nombre);
+    printf("Numero de jugador: ");
+    scanf("%d",&nuevo->nro);
+    if (n->sub == NULL || nuevo->nro < n->sub->nro){
+        nuevo->sig = n->sub;
+        n->sub = nuevo;
+    } else {
+        t_jugador *ant = n->sub;
+        t_jugador *aux = n->sub->sig;
+        while (aux != NULL && aux->nro < nuevo->nro){
+            ant = aux;
+            aux = aux->sig;
+        }
+        ant->sig = nuevo;
+        nuevo->sig = aux;
+    }
+}
+void evacios(t_equipo *a){
+    if (a == NULL) return;
+    if (a->sub == NULL){
+        printf("%s no tiene jugadores\n",a->equipo);
+    } evacios(a->sig);
+}
+//--------------
+int main(){
+    t_equipo *lista = NULL;
+    t_jugador *sub = NULL;
+    int rt = 1;
+    while (rt != 0){
+        system("cls");
+        printf("1)Ingresar nuevo equipo.\n2)Ingresar jugador a equipo.\n3)Mostrar equipos sin jugadores.\n4)Mostrar lista\n");
+        scanf("%d",&rt);
+        if (rt == 1){
+            ordenar(&lista);
+            system("cls");
+        }
+        if (rt == 2){
+            int a = 1;
+            while (a == 1){
+                char s[50];
+                system("cls");
+                printf("Ingrse nombre de equipo: ");
+                scanf("%s",s);
+                t_equipo *n = buscar(lista,s);
+                if (n == NULL){
+                    printf("Equipo no encontrado.");
+                } else {
+                    char r = 's';
+                    while (r == 's'){
+                        insertar(n);
+                        printf("Ingresar nuevo jugador a %s? (s)(n)",s);
+                        scanf(" %c",&r);
+                        system("cls");
+                    }
+                }
+                break;
+            }
+        }
+        if (rt == 3){
+            system("cls");
+            evacios(lista);
+            system("pause");
+        }
+        if (rt == 4){
+        mostrar(lista);
+        system("cls");
+        }
+    }
+}
